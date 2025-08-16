@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meter Data & Loss Monitoring Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Header Section -->
+      <header class="app-header">
+        <div class="brand">
+          <div class="logo">⚡</div>
+          <div class="title">Meter Data & Loss Monitoring Dashboard</div>
+          <button id="themeToggle" class="file-input"><span>MODE</span></button>
+
+        </div>
+        <div class="header-actions">
+          <input id="globalSearch" class="search" type="search" placeholder="Search Feeder, DT, or Meter..." />
+        </div>
+      </header>
+
+      <!-- Fixed info bar -->
+      <section class="infobar" id="infobar">
+        <div><strong>File:</strong> <span id="fileName">—</span></div>
+        <div><strong>Data Date:</strong> <span id="dataDate">Today</span></div>
+        <div><strong>Processed:</strong> <span id="processedTime">—</span></div>
+      </section>
+
+      <!-- KPI Tiles -->
+      <!-- KPIs Section -->
+<div class="dashboard-section">
+  <h2>Key Performance Indicators</h2>
+  <div id="kpiGrid" class="kpi-grid">
+    <!-- Cards injected dynamically -->
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Charts Section -->
+  <section class="charts-section">
+    <div class="charts-grid">
+      <div class="chart-card full-width">
+        <div class="chart-header">
+          <h3>Installation & Communication Timeline</h3>
+          <div class="time-controls">
+            <!-- Navigation -->
+            <div class="time-navigation">
+              <button class="btn btn--outline btn--sm" id="prevPeriod">← Previous</button>
+              <span class="time-period" id="timePeriod">Current Week</span>
+              <button class="btn btn--outline btn--sm" id="nextPeriod">Next →</button>
+            </div>
+            <!-- Filters -->
+            <div class="time-filters">
+              <button class="btn btn--outline btn--sm active" id="weekFilter">Week</button>
+              <button class="btn btn--outline btn--sm" id="monthFilter">Month</button>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Chart -->
+        <div class="chart-container" style="position: relative; height: 400px;">
+          <canvas id="timelineChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>Communication Status</h3>
+        <div class="chart-container" style="position: relative; height: 300px;">
+          <canvas id="commStatusChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Region-wise Distribution</h3>
+        <div class="chart-container" style="position: relative; height: 300px;">
+          <canvas id="regionPieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Meter Detailed Summary Section -->
+  <section class="summary-section">
+    <div class="summary-header">
+      <h3>Meter Detailed Summary</h3>
+      <div class="summary-controls">
+        <button class="btn btn--secondary" id="exportSummaryBtn">Export Summary</button>
+      </div>
+    </div>
+    <div class="summary-container">
+      <table class="summary-table" id="summaryTable">
+        <thead>
+          <tr>
+            <th>Region Name</th>
+            <th>Meter Type</th>
+            <th>Comm Type</th>
+            <th>Total</th>
+            <th>Comm</th>
+            <th>Non-Comm</th>
+            <th>NeverComm</th>
+            <th>L1</th>
+            <th>L2</th>
+            <th>DE</th>
+            <th>MDM</th>
+            <th>SAP</th>
+            <th>SAT</th>
+          </tr>
+        </thead>
+        <tbody id="summaryTableBody">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+
+      <!-- Main Content: Left Nav Tree + Right Details -->
+      <main class="main-layout">
+        <aside class="nav-panel">
+          <div class="panel-header">
+            <div class="panel-title">Explorer</div>
+            <div class="panel-tools">
+              <select id="regionFilter">
+                <option value="__ALL__">All Regions</option>
+              </select>
+            </div>
+          </div>
+          <div id="tree" class="tree"></div>
+        </aside>
+
+        <section class="content-panel">
+          <!-- Region-wise Summary Table -->
+          <div class="card">
+            <div class="card-header">
+              <!-- <div class="card-title">Region-wise Summary</div> -->
+            </div>
+            <div class="table-wrap">
+              <table id="regionTable" class="table">
+                <!-- <thead>
+                  <tr>
+                    <th data-key="region">Region</th>
+                    <th data-key="feeders">Feeders</th>
+                    <th data-key="dts">DTs</th>
+                    <th data-key="meters">Meters</th>
+                    <th data-key="comm">Comm</th>
+                    <th data-key="nonComm">Non-Comm</th>
+                    <th data-key="neverComm">NeverComm</th>
+                  </tr>
+                </thead> -->
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Hierarchical Loss Table (Accordion) -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Feeder → DT → Consumer Losses</div>
+              <div class="header-filters">
+                <label>
+                  Region
+                  <select id="accordionRegionFilter">
+                    <option value="__ALL__">All Regions</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table id="accordionTable" class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>F→DT Loss %</th>
+                    <th>F→Cons Loss %</th>
+                    <th>DT→Cons Loss %</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Detail View -->
+          <!-- <div class="card" id="detailCard">
+            <div class="card-header">
+              <div class="card-title" id="detailTitle">Details</div>
+            </div>
+            <div id="detailMetrics" class="detail-metrics"></div>
+            <div id="detailBody"></div>
+          </div> -->
+
+          <!-- === Added from index.html === -->
+          
+        
+    
+      </main>
+
+      <footer class="footer">
+        <span>No database. All metrics are computed in-memory from the uploaded Excel.</span>
+      </footer>
+    </div>
+
+    <!-- Scripts -->
+  <!-- Scripts (load libraries first) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- App scripts -->
+<script src="./assets/summary.js"></script>
+<script src="./assets/app.js"></script>
+<!-- <script src="./assets/kpi.js"></script> -->
+  </body>
+</html>
+
+

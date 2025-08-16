@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KPI Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./assets/styles.css" />
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f6fa;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  align-items: start; /* let cards size by content */
+}
+
+.kpi {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  display: flex;
+  height: 8rem;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.kpi .label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+.kpi .value {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #111;
+  line-height: 1.4;
+  margin-bottom: 6px; /* extra spacing */
+}
+
+.kpi .subtitle {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  line-height: 1.4; /* more breathing room */
+}
+
+.kpi .badge {
+  margin-top: auto;
+  font-size: 0.75rem;
+  background: #eef2f7;
+  padding: 4px 8px;
+  border-radius: 8px;
+  align-self: flex-start;
+  color: #333;
+  font-weight: 500;
+}
+
+    .kpi--comm .badge { background: #d1fae5; color: #065f46; }
+    .kpi--non-comm .badge { background: #fee2e2; color: #991b1b; }
+    .kpi--nevercomm .badge { background: #ede9fe; color: #5b21b6; }
+    .kpi--unmapped .badge { background: #fef3c7; color: #92400e; }
+  </style>
+
+  <!-- XLSX + KPI Script -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="kpi.js" defer></script>
+</head>
+<body>
+  <h1>Key Performance Indicators</h1>
+
+  <div id="kpiGrid" class="kpi-grid">
+    <!-- Cards injected dynamically -->
+  </div>
+</body>
+</html>
