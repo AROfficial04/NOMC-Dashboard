@@ -173,36 +173,60 @@ function renderSummaryTable(summaryData) {
 // --- timeline data prep ---
 let installDaily={}, commDaily={};
 function prepareTimelineData() {
-  installDaily={}; commDaily={};
-  workbookData.forEach(r=>{
-    const d1=parseDateAny(r["Installation Date"]);
-    if(d1){const k=d1.toISOString().slice(0,10); installDaily[k]=(installDaily[k]||0)+1;}
-    const d2=parseDateAny(r["First Comm"]);
-    if(d2){const k=d2.toISOString().slice(0,10); commDaily[k]=(commDaily[k]||0)+1;}
+  installDaily = {};
+  commDaily = {};
+
+  workbookData.forEach(r => {
+    const d1 = parseDateAny(r["Installation Date"]);
+    if (d1) {
+      const k = d1.toISOString().slice(0, 10);
+      installDaily[k] = (installDaily[k] || 0) + 1;
+    }
+    const d2 = parseDateAny(r["First Comm"]);
+    if (d2) {
+      const k = d2.toISOString().slice(0, 10);
+      commDaily[k] = (commDaily[k] || 0) + 1;
+    }
   });
-  allDays = Array.from(new Set([...Object.keys(installDaily),...Object.keys(commDaily)])).sort();
-  currentWeekIndex = Math.floor((allDays.length-1)/7); // start at last week
+
+  // Collect all unique days and sort them
+  allDays = Array.from(new Set([
+    ...Object.keys(installDaily),
+    ...Object.keys(commDaily)
+  ])).sort();
+
+  // Start with the *last* full week
+  currentWeekIndex = Math.max(0, Math.floor((allDays.length - 1) / 7));
 }
 
 function renderTimeline() {
-  const start=currentWeekIndex*7;
-  const end=start+7;
-  const weekDays=allDays.slice(start,end);
-  const installSeries=weekDays.map(d=>installDaily[d]||0);
-  const commSeries=weekDays.map(d=>commDaily[d]||0);
-  if(timelineChart) timelineChart.destroy();
-  timelineChart=new Chart(document.getElementById("timelineChart"),{
-    type:"line",
-    data:{
-      labels:weekDays,
-      datasets:[
-        {label:"Installations",data:installSeries,borderColor:"#3b82f6",tension:0.2,fill:false},
-        {label:"First Communication",data:commSeries,borderColor:"#22c55e",tension:0.2,fill:false}
+  const totalDays = allDays.length;
+  // Always show the last 10 days (or fewer if not enough data)
+  const weekDays = allDays.slice(Math.max(0, totalDays - 30), totalDays);
+
+  const installSeries = weekDays.map(d => installDaily[d] || 0);
+  const commSeries = weekDays.map(d => commDaily[d] || 0);
+
+  if (timelineChart) timelineChart.destroy();
+
+  timelineChart = new Chart(document.getElementById("timelineChart"), {
+    type: "line",
+    data: {
+      labels: weekDays,
+      datasets: [
+        { label: "Installations", data: installSeries, borderColor: "#3b82f6", tension: 0.2, fill: false },
+        { label: "First Communication", data: commSeries, borderColor: "#22c55e", tension: 0.2, fill: false }
       ]
     },
-    options:{responsive:true,interaction:{mode:"index",intersect:false},scales:{y:{beginAtZero:true}}}
+    options: {
+      responsive: true,
+      interaction: { mode: "index", intersect: false },
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
+
+
 
 function prevWeek(){ if(currentWeekIndex>0){currentWeekIndex--; renderTimeline();} }
 function nextWeek(){ if((currentWeekIndex+1)*7<allDays.length){currentWeekIndex++; renderTimeline();} }
